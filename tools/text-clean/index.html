@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>批量文本去重与格式转换 - 账号列表转 CSV/JSON/表格，提取邮箱手机号</title>
+<meta name="description" content="在线批量文本处理：一行一条的数据一键去重、去空行、去首尾空格、排序、按关键词过滤；自动提取邮箱、手机号、链接、域名；把「手机号----密码----2FA」这类账号列表转成 CSV、JSON 或 Markdown 表格。纯浏览器本地处理，数据不上传。">
+<meta name="keywords" content="文本去重,在线去重工具,批量去重,账号列表格式化,账号转csv,文本转json,提取邮箱,提取手机号,手机号密码提取,csv在线生成,文本清洗">
+<link rel="canonical" href="https://yuantou.one/tools/text-clean/">
+<meta property="og:title" content="批量文本去重与格式转换 · 账号列表转 CSV/JSON">
+<meta property="og:description" content="去重、提取邮箱手机号、账号列表转表格，全部本地处理不上传。">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#111721; --panel-2:#0e141d; --line:#1e2733;
+    --txt:#dbe3ee; --dim:#8b96a5; --acc:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--acc);text-decoration:none}
+  .wrap{max-width:1240px;margin:0 auto;padding:26px 16px 70px}
+  header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:20px}
+  h1{font-size:23px;margin:0 0 8px}
+  .sub{color:var(--dim);font-size:14px;margin:0}
+  .badge{display:inline-flex;gap:6px;align-items:center;background:rgba(34,197,94,.12);color:#4ade80;
+    border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:3px 10px;font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:1fr 300px 1fr;gap:14px;align-items:start}
+  @media(max-width:1080px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .card-h{padding:11px 13px;border-bottom:1px solid var(--line);background:var(--panel-2);
+    display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .card-h h2{font-size:13.5px;margin:0;font-weight:600}
+  .card-b{padding:12px}
+  textarea{width:100%;min-height:300px;resize:vertical;background:#080c12;color:var(--txt);
+    border:1px solid var(--line);border-radius:8px;padding:10px;font-family:var(--mono);
+    font-size:12.5px;line-height:1.6;outline:none;word-break:break-all}
+  textarea:focus{border-color:var(--acc)}
+  button{cursor:pointer;border:1px solid var(--line);background:#18202c;color:var(--txt);
+    padding:7px 12px;border-radius:7px;font-size:12.5px;transition:.12s}
+  button:hover{background:#1e2836}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  button.mini{padding:5px 10px;font-size:12px}
+  .grp{margin-bottom:14px}
+  .grp-t{font-size:11.5px;color:var(--dim);letter-spacing:.4px;margin-bottom:7px;text-transform:uppercase}
+  .btns{display:flex;flex-wrap:wrap;gap:6px}
+  .btns button{flex:0 0 auto}
+  .btns button.on{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.55);color:#93c5fd}
+  .out{min-height:300px;max-height:560px;overflow:auto;background:#080c12;border:1px solid var(--line);
+    border-radius:8px;padding:10px;font-family:var(--mono);font-size:12.5px;white-space:pre;
+    word-break:break-all;line-height:1.6}
+  .stat{color:var(--dim);font-size:12px;margin-top:8px;display:flex;flex-wrap:wrap;gap:12px}
+  .stat b{color:var(--txt)}
+  .errbox{margin-top:8px;padding:8px 10px;border-radius:7px;background:rgba(239,68,68,.08);
+    border:1px solid rgba(239,68,68,.3);color:#fca5a5;font-size:12px;display:none}
+  .tabs{display:flex;flex-wrap:wrap;gap:5px}
+  .tab{padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:transparent;
+    color:var(--dim);font-size:12px}
+  .tab.on{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.5);color:#93c5fd}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  footer{margin-top:26px;color:var(--dim);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+  @media(max-width:640px){
+    .wrap{padding:16px 10px 60px} h1{font-size:19px}
+    textarea{min-height:220px}
+    .out{min-height:220px;max-height:420px}
+    button{padding:9px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>批量文本去重与格式转换</h1>
+    <p class="sub">一行一条的数据：去重、去空行、排序、按关键词过滤、提取邮箱手机号链接；账号列表可直接转成 CSV / JSON / 表格。</p>
+    <span class="badge">● 全部在浏览器本地处理，数据不上传</span>
+  </header>
+
+  <div class="grid">
+    <!-- 输入 -->
+    <section class="card">
+      <div class="card-h">
+        <h2>输入</h2>
+        <div class="row">
+          <button class="mini" id="btnDemo">示例</button>
+          <button class="mini" id="btnClear">清空</button>
+        </div>
+      </div>
+      <div class="card-b">
+        <textarea id="input" placeholder="一行一条，例如：&#10;13800138000&#10;abc@example.com&#10;+1 2038064483----Passw0rd----JBSWY3DPEHPK3PXP&#10;13800138000&#10;"></textarea>
+        <div class="stat" id="inStat">0 行</div>
+      </div>
+    </section>
+
+    <!-- 操作 -->
+    <section class="card">
+      <div class="card-h"><h2>操作</h2></div>
+      <div class="card-b">
+        <div class="grp">
+          <div class="grp-t">清洗</div>
+          <div class="btns">
+            <button data-act="trim">去首尾空白</button>
+            <button data-act="dedupe">去重</button>
+            <button data-act="blank">去空行</button>
+            <button data-act="lower">转小写</button>
+          </div>
+        </div>
+        <div class="grp">
+          <div class="grp-t">排序</div>
+          <div class="btns">
+            <button data-act="sort-asc">A→Z</button>
+            <button data-act="sort-desc">Z→A</button>
+            <button data-act="sort-len">按长度</button>
+            <button data-act="shuffle">随机打乱</button>
+          </div>
+        </div>
+        <div class="grp">
+          <div class="grp-t">提取</div>
+          <div class="btns">
+            <button data-act="ex-email">邮箱</button>
+            <button data-act="ex-phone">手机号</button>
+            <button data-act="ex-url">链接</button>
+            <button data-act="ex-domain">域名</button>
+            <button data-act="ex-num">纯数字</button>
+          </div>
+        </div>
+        <div class="grp">
+          <div class="grp-t">过滤</div>
+          <input id="kw" placeholder="关键词，空=不过滤"
+            style="width:100%;background:#080c12;border:1px solid var(--line);border-radius:7px;padding:7px 10px;color:var(--txt);font-size:12.5px;outline:none">
+          <div class="btns" style="margin-top:6px">
+            <button data-act="keep">只保留含</button>
+            <button data-act="drop">删掉含</button>
+          </div>
+        </div>
+        <div class="grp" style="margin-bottom:0">
+          <div class="grp-t">一键</div>
+          <div class="btns">
+            <button class="primary" data-act="clean">标准清洗</button>
+            <button data-act="account">识别账号列表</button>
+          </div>
+        </div>
+        <div class="errbox" id="err"></div>
+      </div>
+    </section>
+
+    <!-- 输出 -->
+    <section class="card">
+      <div class="card-h">
+        <h2>输出</h2>
+        <div class="row">
+          <button class="mini" id="btnCopy">复制</button>
+          <button class="mini" id="btnDownload">下载</button>
+        </div>
+      </div>
+      <div class="card-b">
+        <div class="tabs" id="tabs">
+          <button class="tab on" data-fmt="lines">换行</button>
+          <button class="tab" data-fmt="comma">逗号</button>
+          <button class="tab" data-fmt="csv">CSV</button>
+          <button class="tab" data-fmt="json">JSON</button>
+          <button class="tab" data-fmt="md">MD 表格</button>
+          <button class="tab" data-fmt="sql">SQL IN</button>
+        </div>
+        <div class="out" id="out" style="margin-top:8px">等待输入…</div>
+        <div class="stat" id="outStat"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-h"><h2>账号列表识别规则</h2></div>
+    <div class="card-b" style="font-size:13px;color:var(--dim);line-height:1.9">
+      <p style="margin:0 0 8px">点「识别账号列表」会自动判断分隔符，支持这些写法：</p>
+      <div style="font-family:var(--mono);font-size:12.5px;background:#080c12;border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre-wrap">13800138000----Passw0rd----JBSWY3DPEHPK3PXP
+13800138000|Passw0rd|JBSWY3DPEHPK3PXP
+13800138000,Passw0rd,JBSWY3DPEHPK3PXP
+13800138000	Passw0rd	JBSWY3DPEHPK3PXP
+user@mail.com : Passw0rd</div>
+      <p style="margin:10px 0 0">识别后按「账号 / 密码 / 2FA密钥」三列处理，可导出 CSV 直接用 Excel 打开。切到 JSON 会得到 <code>[{"account":"...","password":"..."}]</code>。</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-h"><h2>相关阅读</h2></div>
+    <div class="card-b" style="display:flex;flex-wrap:wrap;gap:10px 18px">
+      <a href="/tools/account-card/">2FA 验证码生成器 + 账号信息卡</a>
+      <a href="/tools/proxy/">代理链接转换工具</a>
+      <a href="/guide/account-safety.html">账号到手必做设置</a>
+      <a href="/guide/faq.html">常见问题 FAQ</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>去重按整行精确匹配（可选忽略大小写）；手机号识别支持中国大陆 11 位与国际带区号格式；CSV 导出带引号转义，Excel 可直接打开。</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = 'lines';
+  var rows = [];       // 当前数据（数组）
+  var accMode = false; // 是否按账号三列处理
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function showErr(m){
+    var e = $('err');
+    if(!m){ e.style.display='none'; e.textContent=''; return; }
+    e.style.display='block'; e.textContent = m;
+  }
+
+  function lines(){
+    return ($('input').value || '').split(/\r?\n/);
+  }
+
+  function refreshInStat(){
+    var ls = lines().filter(function(x){ return x.trim() !== ''; });
+    $('inStat').innerHTML = '共 <b>' + ls.length + '</b> 行 · ' + ($('input').value.length) + ' 字符';
+  }
+
+  /* ---------- 操作 ---------- */
+  var ACTS = {
+    trim: function(){ rows = lines().map(function(l){ return l.trim(); }); },
+    blank: function(){
+      var src = rows.length ? rows : lines();
+      rows = src.filter(function(l){ return l.trim() !== ''; });
+    },
+    dedupe: function(){
+      var src = rows.length ? rows : lines();
+      var seen = {}, out = [];
+      src.forEach(function(l){
+        var k = l.trim();
+        if(!k) return;
+        if(!seen[k]){ seen[k] = 1; out.push(k); }
+      });
+      rows = out;
+    },
+    lower: function(){
+      var src = rows.length ? rows : lines();
+      rows = src.map(function(l){ return l.toLowerCase(); });
+    },
+    'sort-asc': function(){
+      var src = rows.length ? rows : lines();
+      rows = src.slice().sort(function(a,b){ return a.localeCompare(b); });
+    },
+    'sort-desc': function(){
+      var src = rows.length ? rows : lines();
+      rows = src.slice().sort(function(a,b){ return b.localeCompare(a); });
+    },
+    'sort-len': function(){
+      var src = rows.length ? rows : lines();
+      rows = src.slice().sort(function(a,b){ return a.length - b.length; });
+    },
+    shuffle: function(){
+      var src = rows.length ? rows : lines();
+      for(var i = src.length - 1; i > 0; i--){
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = src[i]; src[i] = src[j]; src[j] = t;
+      }
+      rows = src;
+    },
+    'ex-email': function(){
+      var txt = ($('input').value || '');
+      var m = txt.match(/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g) || [];
+      rows = uniq(m);
+    },
+    'ex-phone': function(){
+      var txt = ($('input').value || '');
+      var out = [];
+      // 中国大陆 11 位（1 开头）
+      (txt.match(/(?<!\d)1[3-9]\d{9}(?!\d)/g) || []).forEach(function(x){ out.push(x); });
+      // 国际带 + 号
+      (txt.match(/\+\d{1,3}[\s\-]?\d{6,12}/g) || []).forEach(function(x){ out.push(x.replace(/[\s\-]/g,'')); });
+      rows = uniq(out);
+    },
+    'ex-url': function(){
+      var txt = ($('input').value || '');
+      rows = uniq(txt.match(/https?:\/\/[^\s"'<>]+/g) || []);
+    },
+    'ex-domain': function(){
+      var txt = ($('input').value || '');
+      var m = txt.match(/(?:https?:\/\/)?(?:[A-Za-z0-9\-]+\.)+[A-Za-z]{2,}/g) || [];
+      rows = uniq(m.map(function(x){ return x.replace(/^https?:\/\//,'').replace(/\/.*$/,'').toLowerCase(); }));
+    },
+    'ex-num': function(){
+      var txt = ($('input').value || '');
+      rows = uniq(txt.match(/\d+/g) || []);
+    },
+    keep: function(){
+      var k = ($('kw').value || '').trim();
+      if(!k){ showErr('请先在「过滤」里填关键词'); return; }
+      var src = rows.length ? rows : lines();
+      rows = src.filter(function(l){ return l.indexOf(k) >= 0; });
+    },
+    drop: function(){
+      var k = ($('kw').value || '').trim();
+      if(!k){ showErr('请先在「过滤」里填关键词'); return; }
+      var src = rows.length ? rows : lines();
+      rows = src.filter(function(l){ return l.indexOf(k) < 0; });
+    },
+    clean: function(){
+      var src = lines().map(function(l){ return l.trim(); }).filter(function(l){ return l !== ''; });
+      var seen = {}, out = [];
+      src.forEach(function(l){ if(!seen[l]){ seen[l] = 1; out.push(l); } });
+      rows = out; accMode = false;
+    },
+    account: function(){
+      var src = lines().filter(function(l){ return l.trim() !== ''; });
+      var parsed = [];
+      src.forEach(function(l){
+        var t = l.trim();
+        var parts = t.split(/\s*----\s*|\s*\|\s*|\t+|\s*,\s*|\s+:\s+/).filter(function(x){ return x !== ''; });
+        if(parts.length < 2){
+          // 退化为 空格分隔（只切一次）
+          var sp = t.split(/\s+/);
+          if(sp.length >= 2) parts = sp;
+        }
+        if(parts.length >= 2) parsed.push(parts);
+      });
+      if(!parsed.length){ showErr('没有识别出账号行，检查分隔符（---- | 逗号 制表符）'); return; }
+      accMode = true;
+      rows = parsed;
+    }
+  };
+
+  function uniq(a){
+    var s = {}, o = [];
+    a.forEach(function(x){ if(!s[x]){ s[x] = 1; o.push(x); } });
+    return o;
+  }
+
+  /* ---------- 输出 ---------- */
+  function data(){
+    if(rows.length) return rows;
+    return lines().map(function(l){ return l.trim(); }).filter(function(l){ return l !== ''; });
+  }
+
+  function csvCell(v){
+    v = String(v == null ? '' : v);
+    return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+  }
+
+  function render(){
+    var d = data();
+    var txt = '';
+    if(!d.length){ $('out').textContent = '等待输入…'; $('outStat').textContent = ''; return; }
+
+    if(accMode && Array.isArray(d[0])){
+      var cols = ['account','password','2fa'];
+      if(fmt === 'csv'){
+        txt = ['account,password,2fa'].concat(d.map(function(r){ return r.slice(0,3).map(csvCell).join(','); })).join('\n');
+      } else if(fmt === 'json'){
+        txt = JSON.stringify(d.map(function(r){
+          var o = {}; cols.forEach(function(c,i){ if(r[i] !== undefined) o[c] = r[i]; }); return o;
+        }), null, 2);
+      } else if(fmt === 'md'){
+        txt = '| 账号 | 密码 | 2FA |\n|---|---|---|\n' + d.map(function(r){
+          return '| ' + [r[0]||'', r[1]||'', r[2]||''].map(function(x){ return String(x).replace(/\|/g,'\\|'); }).join(' | ') + ' |';
+        }).join('\n');
+      } else if(fmt === 'comma'){
+        txt = d.map(function(r){ return r.slice(0,3).join(','); }).join('\n');
+      } else if(fmt === 'sql'){
+        txt = 'IN (' + d.map(function(r){ return "'" + String(r[0]).replace(/'/g,"''") + "'"; }).join(', ') + ')';
+      } else {
+        txt = d.map(function(r){ return r.join('\t'); }).join('\n');
+      }
+    } else {
+      if(fmt === 'lines') txt = d.join('\n');
+      else if(fmt === 'comma') txt = d.join(',');
+      else if(fmt === 'csv') txt = d.map(function(x){ return csvCell(x); }).join('\n');
+      else if(fmt === 'json') txt = JSON.stringify(d, null, 2);
+      else if(fmt === 'md') txt = '| # | 内容 |\n|---|---|\n' + d.map(function(x,i){
+        return '| ' + (i+1) + ' | ' + String(x).replace(/\|/g,'\\|') + ' |';
+      }).join('\n');
+      else if(fmt === 'sql') txt = 'IN (' + d.map(function(x){ return "'" + String(x).replace(/'/g,"''") + "'"; }).join(', ') + ')';
+    }
+
+    $('out').textContent = txt;
+    $('outStat').innerHTML = '输出 <b>' + d.length + '</b> 条 · ' + txt.length + ' 字符' +
+      (accMode ? ' · <span style="color:#93c5fd">账号三列模式</span>' : '');
+  }
+
+  /* ---------- 事件 ---------- */
+  document.querySelectorAll('[data-act]').forEach(function(b){
+    b.addEventListener('click', function(){
+      showErr('');
+      var act = b.getAttribute('data-act');
+      if(act !== 'account') accMode = false;
+      try { ACTS[act](); } catch(e){ showErr('处理失败: ' + e.message); return; }
+      refreshInStat();
+      render();
+    });
+  });
+
+  document.querySelectorAll('.tab').forEach(function(b){
+    b.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      fmt = b.getAttribute('data-fmt');
+      render();
+    });
+  });
+
+  $('input').addEventListener('input', function(){
+    rows = []; accMode = false;
+    refreshInStat();
+    render();
+  });
+
+  $('btnClear').addEventListener('click', function(){
+    $('input').value = ''; $('kw').value = '';
+    rows = []; accMode = false; showErr('');
+    refreshInStat(); render(); $('input').focus();
+  });
+
+  $('btnDemo').addEventListener('click', function(){
+    $('input').value = [
+      '13800138000----Passw0rd1----JBSWY3DPEHPK3PXP',
+      '13900139000|Passw0rd2|KRSXG5CTMVRXEZLU',
+      'user@example.com : MyPass3',
+      '13800138000----Passw0rd1----JBSWY3DPEHPK3PXP',
+      '',
+      'https://yuantou.one/tools/proxy/',
+      '联系邮箱 hello@example.com，备用 backup@test.org'
+    ].join('\n');
+    rows = []; accMode = false;
+    refreshInStat(); render();
+  });
+
+  function copyText(t, btn){
+    var done = function(){ var o = btn.textContent; btn.textContent = '已复制'; setTimeout(function(){ btn.textContent = o; }, 1400); };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done).catch(fb);
+    else fb();
+    function fb(){
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(e){}
+      document.body.removeChild(ta);
+    }
+  }
+
+  $('btnCopy').addEventListener('click', function(){
+    var t = $('out').textContent;
+    if(!t || t === '等待输入…'){ showErr('没有可复制的内容'); return; }
+    copyText(t, this);
+  });
+
+  $('btnDownload').addEventListener('click', function(){
+    var t = $('out').textContent;
+    if(!t || t === '等待输入…'){ showErr('没有可下载的内容'); return; }
+    var name = 'output.txt', mime = 'text/plain';
+    if(fmt === 'csv'){ name = 'output.csv'; mime = 'text/csv'; }
+    else if(fmt === 'json'){ name = 'output.json'; mime = 'application/json'; }
+    else if(fmt === 'md'){ name = 'output.md'; mime = 'text/markdown'; }
+    var blob = new Blob(['\ufeff' === '\ufeff' && fmt === 'csv' ? '\ufeff' : '', t], {type: mime + ';charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 800);
+  });
+
+  refreshInStat();
+})();
+</script>
+</body>
+</html>
