@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>代理链接转换工具 - VMess/VLESS/SS/SSR/Trojan/Hysteria2/TUIC/Juicity/AnyTLS 转 Clash、sing-box、Surge</title>
+<meta name="description" content="在线代理链接与订阅格式转换：支持 VMess、VLESS、Shadowsocks、SSR、Trojan、Hysteria2、TUIC、Juicity、AnyTLS、Naive、Brook、SSH、Mieru、WireGuard、Socks5、HTTP 共 16 种协议，输出 Clash/Mihomo、sing-box、Surge、Quantumult X、Loon、OpenClash、PassWall 与 WireGuard 配置。支持订阅链接直接拉取，纯浏览器本地解析。">
+<meta name="keywords" content="代理链接转换,vmess转clash,vless转clash,ss转clash,订阅转换,订阅链接转换,节点转换,clash配置生成,clash转surge,sing-box配置,openclash订阅转换,passwall订阅转换,hysteria2转换,trojan转换,juicity转换,anytls转换,wireguard配置">
+<link rel="canonical" href="https://yuantou.one/tools/proxy/">
+<meta property="og:title" content="代理链接转换工具 · 支持 10 种协议">
+<meta property="og:description" content="16 种协议一键转 Clash、sing-box、Surge、Quantumult X、Loon、OpenClash、PassWall、WireGuard，支持订阅链接拉取。">
+<meta property="og:type" content="website">
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#111721; --panel-2:#0e141d; --line:#1e2733;
+    --txt:#dbe3ee; --dim:#8b96a5; --acc:#3b82f6; --acc-2:#22c55e; --warn:#f59e0b; --err:#ef4444;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--acc);text-decoration:none}
+  .wrap{max-width:1240px;margin:0 auto;padding:28px 18px 80px}
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:22px}
+  h1{font-size:24px;margin:0 0 8px;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:14px;margin:0}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.12);
+    color:#4ade80;border:1px solid rgba(34,197,94,.3);border-radius:999px;
+    padding:3px 10px;font-size:12px;margin-top:10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 14px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+  .card-h h2{font-size:14px;margin:0;font-weight:600;color:var(--txt)}
+  .card-b{padding:14px}
+  textarea{width:100%;min-height:220px;resize:vertical;background:#080c12;color:var(--txt);
+    border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--mono);
+    font-size:12.5px;line-height:1.55;outline:none;word-break:break-all}
+  textarea:focus{border-color:var(--acc)}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+  button{cursor:pointer;border:1px solid var(--line);background:#18202c;color:var(--txt);
+    padding:8px 14px;border-radius:8px;font-size:13px;transition:.15s}
+  button:hover{background:#1e2836;border-color:#2b3a4d}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+  button.primary:hover{background:#2f6fe0}
+  button.ghost{background:transparent}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px}
+  .tab{padding:6px 12px;border-radius:7px;border:1px solid var(--line);
+    background:transparent;color:var(--dim);font-size:12.5px}
+  .tab.on{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.5);color:#93c5fd}
+  .out{min-height:220px;max-height:520px;overflow:auto;background:#080c12;border:1px solid var(--line);
+    border-radius:8px;padding:12px;font-family:var(--mono);font-size:12.5px;white-space:pre;
+    word-break:break-all;line-height:1.55}
+  .stat{display:flex;flex-wrap:wrap;gap:14px;color:var(--dim);font-size:12.5px;margin-top:10px}
+  .stat b{color:var(--txt);font-weight:600}
+  .ok{color:var(--acc-2)} .no{color:var(--err)} .wn{color:var(--warn)}
+  details{border-top:1px solid var(--line);padding:10px 14px}
+  summary{cursor:pointer;font-size:13px;color:var(--dim)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--dim);font-weight:500;white-space:nowrap;width:110px}
+  td{font-family:var(--mono);word-break:break-all}
+  .proto{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+  .pill{font-size:12px;padding:4px 11px;border-radius:999px;border:1px solid var(--line);
+    background:var(--panel);color:var(--dim);font-family:var(--mono)}
+  .pill b{color:#93c5fd;font-weight:600}
+  .errbox{margin-top:12px;padding:10px 12px;border-radius:8px;background:rgba(239,68,68,.08);
+    border:1px solid rgba(239,68,68,.3);font-size:12.5px;color:#fca5a5;display:none}
+  .hint{color:var(--dim);font-size:12.5px;margin-top:10px}
+  footer{margin-top:30px;color:var(--dim);font-size:12.5px;border-top:1px solid var(--line);padding-top:16px}
+  .copy-ok{color:var(--acc-2)!important;border-color:rgba(34,197,94,.5)!important}
+  @media(max-width:640px){
+    .wrap{padding:18px 12px 60px}
+    h1{font-size:20px}
+    .tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{white-space:nowrap;flex:0 0 auto;padding:7px 13px}
+    button{padding:10px 16px;font-size:14px}
+    .out{max-height:400px;font-size:12px}
+    textarea{min-height:180px;font-size:12px}
+    .card-h{padding:10px 12px}
+    .card-b{padding:12px}
+  }
+</style>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "WebApplication",
+   "name": "代理链接转换工具",
+   "url": "https://yuantou.one/tools/proxy/",
+   "applicationCategory": "UtilitiesApplication",
+   "operatingSystem": "Any",
+   "browserRequirements": "需要支持 JavaScript",
+   "description": "在线把 VMess、VLESS、Shadowsocks、SSR、Trojan、Hysteria2、TUIC、Socks5、HTTP 等代理链接转换为 Clash/Mihomo YAML、sing-box JSON、v2rayN 链接或 Base64 订阅。纯浏览器本地解析，不上传服务器。",
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY"
+   },
+   "featureList": [
+    "VMess 转 Clash",
+    "VLESS Reality 解析",
+    "SS SIP002 与旧格式",
+    "SSR 解析",
+    "Trojan WebSocket/gRPC",
+    "Hysteria2 转 Clash",
+    "TUIC 转 sing-box",
+    "批量粘贴转换",
+    "Base64 订阅识别"
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "转换会把节点信息上传到服务器吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "不会。解析和生成全部在浏览器里用 JavaScript 完成，页面不发送任何节点信息到服务器，断网也能用。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "支持哪些代理协议？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "VMess、VLESS（含 reality 与 xtls-rprx-vision）、Shadowsocks（SIP002、旧版 base64、obfs 与 v2ray-plugin）、ShadowsocksR、Trojan（ws/grpc）、Hysteria、Hysteria2、TUIC、Socks5、HTTP(S)。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "能直接粘贴 Base64 订阅内容吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "可以。整段 Base64 订阅会被自动识别并解码，逐条解析后输出。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "生成的 Clash 配置能直接用吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "可以。包含 proxies、proxy-groups（自动选择 + 手动选择）和基础分流规则，保存为 config.yaml 后 Clash Verge、Mihomo、ClashX 均可加载。"
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>代理链接转换工具</h1>
+    <p class="sub">把任意代理链接转换成 Clash / sing-box / Surge / Quantumult X / Loon / OpenClash / PassWall 可用的配置。支持 16 种协议、批量粘贴、Base64 订阅自动识别、订阅链接直接拉取。</p>
+    <span class="badge">● 全部在浏览器本地解析，不经过任何服务器</span>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <div class="card-h">
+        <h2>输入</h2>
+        <button class="ghost" id="btnSample">填入示例</button>
+      </div>
+      <div class="card-b">
+        <textarea id="input" placeholder="每行一条链接，例如：&#10;vmess://eyJ2IjoiMiIsInBzIjoi...&#10;ss://YWVzLTI1Ni1nY206cGFzc3dvcmQ@1.2.3.4:8388#节点名&#10;trojan://pass@5.6.7.8:443?sni=x.com#节点名&#10;&#10;也可以直接粘贴整段 Base64 订阅内容"></textarea>
+        <div class="row" style="margin-top:10px">
+          <input id="subUrl" placeholder="或粘贴订阅链接 https://... （由本站代取，15 秒超时）"
+            style="flex:1;min-width:240px;background:#080c12;border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--txt);font-size:13px;outline:none">
+          <button id="btnFetch">拉取订阅</button>
+        </div>
+        <div class="row">
+          <button class="primary" id="btnConvert">开始转换</button>
+          <button class="ghost" id="btnClear">清空</button>
+          <span class="hint" id="countHint">未解析</span>
+        </div>
+        <div class="errbox" id="errbox"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-h">
+        <h2>输出</h2>
+        <button class="ghost" id="btnCopy">复制</button>
+      </div>
+      <div class="card-b">
+        <div class="tabs" id="tabs">
+          <button class="tab on" data-fmt="clash">Clash</button>
+          <button class="tab" data-fmt="singbox">sing-box</button>
+          <button class="tab" data-fmt="surge">Surge</button>
+          <button class="tab" data-fmt="quanx">Quantumult X</button>
+          <button class="tab" data-fmt="loon">Loon</button>
+          <button class="tab" data-fmt="openclash">OpenClash（路由）</button>
+          <button class="tab" data-fmt="wireguard">WireGuard</button>
+          <button class="tab" data-fmt="passwall">PassWall（路由）</button>
+          <button class="tab" data-fmt="links">链接清单</button>
+          <button class="tab" data-fmt="base64">Base64 订阅</button>
+          <button class="tab" data-fmt="detail">解析明细</button>
+        </div>
+        <div class="out" id="out" style="margin-top:10px">等待输入…</div>
+        <div class="row">
+          <button class="ghost" id="btnDownload">下载文件</button>
+          <span class="hint" id="outHint"></span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <details id="detailBox" style="margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px">
+    <summary>解析明细（逐条字段）</summary>
+    <div id="detailBody" style="padding:0 14px 14px"></div>
+  </details>
+
+  <div class="proto">
+    <span class="pill"><b>VMess</b></span>
+    <span class="pill"><b>VLESS</b> reality / vision</span>
+    <span class="pill"><b>Shadowsocks</b> SIP002 / 旧版 / plugin</span>
+    <span class="pill"><b>SSR</b></span>
+    <span class="pill"><b>Trojan</b> ws / grpc</span>
+    <span class="pill"><b>Hysteria / Hysteria2</b></span>
+    <span class="pill"><b>TUIC</b></span>
+    <span class="pill"><b>Juicity</b></span>
+    <span class="pill"><b>AnyTLS</b></span>
+    <span class="pill"><b>NaiveProxy</b></span>
+    <span class="pill"><b>Brook</b></span>
+    <span class="pill"><b>SSH</b></span>
+    <span class="pill"><b>Mieru</b></span>
+    <span class="pill"><b>WireGuard</b></span>
+    <span class="pill"><b>Socks5</b></span>
+    <span class="pill"><b>HTTP(S)</b></span>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="card-h"><h2>相关阅读</h2></div>
+    <div class="card-b" style="display:flex;flex-wrap:wrap;gap:10px 18px">
+      <a href="/guide/ai-service-region-limit.html">AI 提示「所在地区不可用」怎么办</a>
+      <a href="/guide/ai-account-safety.html">AI 账号防封 5 条铁律</a>
+      <a href="/guide/apple-id-guide.html">小火箭是什么 / 美区 Apple ID 怎么选</a>
+      <a href="/guide/faq.html">常见问题 FAQ</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>支持 16 种协议：VMess、VLESS（reality / xtls-vision / ws / grpc）、Shadowsocks（SIP002、旧版、obfs、v2ray-plugin）、ShadowsocksR、Trojan（ws / grpc）、Hysteria / Hysteria2、TUIC、Juicity、AnyTLS、NaiveProxy、Brook、SSH、Mieru、WireGuard（.conf 文本）、Socks5 / Socks4、HTTP(S)。</p>
+    <p>输出 11 种格式：Clash / Mihomo、sing-box、Surge、Quantumult X、Loon、OpenClash（路由器）、PassWall / SSR Plus+（路由器）、WireGuard .conf、v2rayN 链接清单、Base64 订阅、逐条字段表。解析在浏览器本地完成；只有你主动填「订阅链接」时，才会由本站服务器代取该订阅（15 秒超时、2MB 上限、内网地址一律拒绝）。</p>
+  </footer>
+</div>
+
+<script src="/tools/proxy/proxy-core.js?v=2"></script>
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var input = $('input'), out = $('out'), errbox = $('errbox'), countHint = $('countHint');
+  var outHint = $('outHint'), detailBody = $('detailBody');
+  var fmt = 'clash';
+  var state = { proxies: [], failed: [] };
+
+  var SAMPLE = [
+    'vmess://' + ProxyCore.b64Encode(JSON.stringify({
+      v:'2', ps:'示例-VMess-WS', add:'1.2.3.4', port:'443',
+      id:'b831381d-6324-4d53-ad4f-8cda48b30811', aid:'0', scy:'auto',
+      net:'ws', type:'none', host:'cdn.example.com', path:'/ws',
+      tls:'tls', sni:'cdn.example.com', fp:'chrome'
+    })),
+    'vless://f7e3b0d1-1111-2222-3333-444455556666@5.6.7.8:443?encryption=none&security=reality&sni=www.microsoft.com&fp=chrome&pbk=abcdefghijklmnopqrstuvwxyz0123456789ABCDEF&sid=1a2b&type=tcp&flow=xtls-rprx-vision#%E7%A4%BA%E4%BE%8B-VLESS-Reality',
+    'ss://' + ProxyCore.b64Encode('aes-256-gcm:password') + '@9.9.9.9:8388#%E7%A4%BA%E4%BE%8B-SS',
+    'trojan://mypassword@11.22.33.44:443?type=ws&sni=t.example.com&host=t.example.com&path=%2Ftj#%E7%A4%BA%E4%BE%8B-Trojan',
+    'hysteria2://hy2pass@12.34.56.78:8443?sni=h.example.com&insecure=1#%E7%A4%BA%E4%BE%8B-HY2'
+  ].join('\n');
+
+  function showErr(msg){
+    if(!msg){ errbox.style.display='none'; errbox.textContent=''; return; }
+    errbox.style.display='block'; errbox.textContent = msg;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderDetail(){
+    if(!state.proxies.length){ detailBody.innerHTML = '<p class="hint" style="padding:14px 0">没有可显示的节点。</p>'; return; }
+    var html = '';
+    state.proxies.forEach(function(p, i){
+      html += '<table><tr><th>#</th><td><b>' + (i+1) + ' · ' + esc(p.type) + ' · ' + esc(p.name||'') + '</b></td></tr>';
+      ProxyCore.describe(p).forEach(function(kv){
+        html += '<tr><th>' + esc(kv[0]) + '</th><td>' + esc(kv[1]) + '</td></tr>';
+      });
+      html += '</table>';
+    });
+    if(state.failed.length){
+      html += '<p class="wn" style="margin-top:14px">未识别的行（' + state.failed.length + '）</p><table>';
+      state.failed.forEach(function(f){
+        html += '<tr><th>原文</th><td>' + esc(f.line) + '<br><span class="no">' + esc(f.reason) + '</span></td></tr>';
+      });
+      html += '</table>';
+    }
+    detailBody.innerHTML = html;
+  }
+
+  function output(){
+    if(!state.proxies.length){
+      out.textContent = '等待输入…';
+      outHint.textContent = '';
+      return;
+    }
+    if(fmt === 'clash'){
+      out.textContent = ProxyCore.toClash(state.proxies);
+      outHint.textContent = 'Clash / Mihomo 配置，保存为 config.yaml';
+    } else if(fmt === 'singbox'){
+      out.textContent = ProxyCore.toSingbox(state.proxies);
+      outHint.textContent = 'sing-box 配置，保存为 config.json';
+    } else if(fmt === 'surge'){
+      out.textContent = ProxyCore.toSurge(state.proxies);
+      outHint.textContent = 'Surge 配置片段，粘贴到 Surge 的配置里';
+    } else if(fmt === 'quanx'){
+      out.textContent = ProxyCore.toQuantumultX(state.proxies);
+      outHint.textContent = 'Quantumult X 配置，保存为 .conf 后导入';
+    } else if(fmt === 'loon'){
+      out.textContent = ProxyCore.toLoon(state.proxies);
+      outHint.textContent = 'Loon 配置片段';
+    } else if(fmt === 'openclash'){
+      out.textContent = ProxyCore.toOpenClash(state.proxies);
+      outHint.textContent = 'OpenClash 用的 Clash 配置（含 fake-ip 与 redir/tproxy 端口）';
+    } else if(fmt === 'wireguard'){
+      out.textContent = ProxyCore.toWireguardBundle(state.proxies);
+      outHint.textContent = 'WireGuard .conf，可直接导入 WireGuard 客户端';
+    } else if(fmt === 'passwall'){
+      out.textContent = ProxyCore.toPassWall(state.proxies);
+      outHint.textContent = 'OpenWrt PassWall / SSR Plus+ 批量导入链接，一行一条';
+    } else if(fmt === 'links'){
+      out.textContent = ProxyCore.toLinkList(state.proxies);
+      outHint.textContent = 'v2rayN / NekoBox 等客户端可直接导入的链接';
+    } else if(fmt === 'base64'){
+      out.textContent = ProxyCore.toBase64Sub(state.proxies);
+      outHint.textContent = 'Base64 订阅内容，可直接作为订阅源';
+    } else {
+      var lines = [];
+      state.proxies.forEach(function(p, i){
+        lines.push('#' + (i+1) + ' ' + p.type + ' · ' + (p.name || ''));
+        ProxyCore.describe(p).forEach(function(kv){ lines.push('  ' + kv[0] + ': ' + kv[1]); });
+        lines.push('');
+      });
+      out.textContent = lines.join('\n');
+      outHint.textContent = '逐条字段，便于核对参数';
+    }
+  }
+
+  function convert(){
+    var text = input.value.trim();
+    showErr('');
+    if(!text){
+      state = { proxies: [], failed: [] };
+      countHint.textContent = '未解析';
+      output(); renderDetail();
+      return;
+    }
+    var r = ProxyCore.parseText(text);
+    state = r;
+    var bad = r.failed.length;
+    countHint.innerHTML = '识别 <b class="ok">' + r.proxies.length + '</b> 条' +
+      (bad ? '，<b class="no">' + bad + '</b> 行无法识别' : '');
+    if(bad) showErr('有 ' + bad + ' 行无法识别：' + r.failed.slice(0,2).map(function(f){return f.line.slice(0,40);}).join(' / '));
+    output(); renderDetail();
+  }
+
+  var t = null;
+  input.addEventListener('input', function(){
+    clearTimeout(t);
+    t = setTimeout(convert, 250);
+  });
+
+  $('btnConvert').addEventListener('click', convert);
+  $('btnClear').addEventListener('click', function(){
+    input.value = ''; convert(); input.focus();
+  });
+  $('btnSample').addEventListener('click', function(){
+    input.value = SAMPLE; convert();
+  });
+
+  $('btnFetch').addEventListener('click', function(){
+    var btn = this;
+    var u = ($('subUrl').value || '').trim();
+    if(!u){ showErr('请先填写订阅链接'); return; }
+    if(!/^https?:\/\//i.test(u)){ showErr('订阅链接必须以 http:// 或 https:// 开头'); return; }
+    showErr('');
+    btn.disabled = true; btn.textContent = '拉取中…';
+    fetch('/tools/proxy/fetch.php?url=' + encodeURIComponent(u), {credentials:'omit'})
+      .then(function(r){
+        if(!r.ok) return r.text().then(function(t){ throw new Error(t || ('HTTP ' + r.status)); });
+        return r.text();
+      })
+      .then(function(txt){
+        if(!txt || !txt.trim()){ throw new Error('订阅内容为空'); }
+        input.value = txt.trim();
+        convert();
+      })
+      .catch(function(e){ showErr('拉取失败：' + (e.message || '网络错误')); })
+      .finally(function(){ btn.disabled = false; btn.textContent = '拉取订阅'; });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(b){
+    b.addEventListener('click', function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      fmt = b.getAttribute('data-fmt');
+      output();
+      if(fmt === 'detail') document.getElementById('detailBox').setAttribute('open','');
+    });
+  });
+
+  function copyText(text, btn){
+    var done = function(){
+      var old = btn.textContent;
+      btn.textContent = '已复制'; btn.classList.add('copy-ok');
+      setTimeout(function(){ btn.textContent = old; btn.classList.remove('copy-ok'); }, 1500);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(); });
+    } else fallback();
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); done(); }catch(e){ showErr('复制失败，请手动选中文本复制'); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  $('btnCopy').addEventListener('click', function(){
+    if(!state.proxies.length){ showErr('没有可复制的内容'); return; }
+    copyText(out.textContent, this);
+  });
+
+  $('btnDownload').addEventListener('click', function(){
+    if(!state.proxies.length){ showErr('没有可下载的内容'); return; }
+    var name = 'proxies.yaml', mime = 'text/yaml';
+    if(fmt === 'singbox'){ name = 'config.json'; mime = 'application/json'; }
+    else if(fmt === 'surge'){ name = 'surge.conf'; mime = 'text/plain'; }
+    else if(fmt === 'quanx'){ name = 'quantumultx.conf'; mime = 'text/plain'; }
+    else if(fmt === 'loon'){ name = 'loon.conf'; mime = 'text/plain'; }
+    else if(fmt === 'openclash'){ name = 'openclash-config.yaml'; mime = 'text/yaml'; }
+    else if(fmt === 'wireguard'){ name = 'wireguard.conf'; mime = 'text/plain'; }
+    else if(fmt === 'passwall'){ name = 'passwall-links.txt'; mime = 'text/plain'; }
+    else if(fmt === 'links'){ name = 'proxies.txt'; mime = 'text/plain'; }
+    else if(fmt === 'base64'){ name = 'subscription.txt'; mime = 'text/plain'; }
+    else if(fmt === 'detail'){ name = 'proxies-detail.txt'; mime = 'text/plain'; }
+    var blob = new Blob([out.textContent], {type: mime + ';charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 1000);
+  });
+
+  // 首屏：如果 URL 带 ?link= 或 ?sub=，自动填入
+  try{
+    var sp = new URLSearchParams(location.search);
+    var pre = sp.get('link') || sp.get('sub');
+    if(pre){ input.value = decodeURIComponent(pre); convert(); }
+  }catch(e){}
+})();
+</script>
+</body>
+</html>
