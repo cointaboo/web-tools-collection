@@ -130,3 +130,5 @@ MIT。用得上就拿去用，改完愿意的话提个 PR 回来。
 ---
 
 工具本身有问题（解析错误、格式不支持、界面难用）欢迎提 Issue。
+
+- 相关主题：[ai-account-playbook](https://github.com/cointaboo/ai-account-playbook) · [apple-id-notes](https://github.com/cointaboo/apple-id-notes) · [telegram-account-notes](https://github.com/cointaboo/telegram-account-notes) · [payment-topup-notes](https://github.com/cointaboo/payment-topup-notes) · [overseas-account-buying-guide](https://github.com/cointaboo/overseas-account-buying-guide) · [account-guide-mcp](https://github.com/cointaboo/account-guide-mcp)
